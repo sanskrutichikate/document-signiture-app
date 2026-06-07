@@ -2,7 +2,9 @@ import express from "express";
 import dotenv from "dotenv";
 import connectDB from "./db.js";
 import authRoutes from "./routes/authRoutes.js";
-import authMiddleware from "./middleware/authMiddleware.js";
+import authmiddleware from "./middleware/authmiddleware.js";
+import documentroutes from "./routes/documentroutes.js";
+import path from "path";
 
 dotenv.config();
 
@@ -14,12 +16,16 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 
-app.get("/profile", authMiddleware, (req, res) => {
+app.get("/profile", authmiddleware, (req, res) => {
   res.json({
     message: "Welcome User",
     user: req.user
   });
 });
+
+app.use("/api/docs", documentroutes);
+
+app.use("/upload",express.static("uploads"));
 
 app.listen(5000, () => {
   console.log("Server running on port 5000");

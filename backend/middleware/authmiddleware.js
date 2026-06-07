@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 const authMiddleware = (req,res,next)=>{
 
  const token = req.header("Authorization");
+ console.log("TOKEN RECEIVED:", token);
 
  if(!token){
   return res.status(401).json({
@@ -24,7 +25,7 @@ const authMiddleware = (req,res,next)=>{
  }catch(error){
 
   res.status(400).json({
-   message:"Invalid Token"
+   message:error.message
   });
 
  }
