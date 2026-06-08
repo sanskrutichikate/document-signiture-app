@@ -4,27 +4,41 @@ import authmiddleware from "../middleware/authmiddleware.js";
 import Document from "../models/document.js";
 
 
-const router=express.Router();
-router.post("/upload" ,authmiddleware ,upload.single("pdf"), async(req ,res)=>{
-    try{
-        const savedDocument=await Document.create({
-        filename:req.file.originalname,
-        filepath:req.file.path,
-        uploadedby:req.user.id
+const router = express.Router();
+router.post("/upload", authmiddleware, upload.single("pdf"), async (req, res) => {
+    try {
+        const savedDocument = await Document.create({
+            filename: req.file.originalname,
+            filepath: req.file.path,
+            uploadedby: req.user.id
 
-    });
+        });
 
-   res.status(201).json({
-    message:"File uploaded successfully"
-   });
+        res.status(201).json({
+            message: "File uploaded successfully"
+        });
 
-}  catch(error){
+    } catch (error) {
         console.log(error);
-    res.status(500).json({
-        message:error.message
-    });
-}
+        res.status(500).json({
+            message: error.message
+        });
+    }
 
+});
+
+router.get("/my-documents", authmiddleware, async (req, res) => {
+    try {
+        const userdocument = await Document.find({
+            uploadedby: req.user.id
+        });
+
+        res.status(200).json(userdocument)
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+    }
 });
 
 export default router;

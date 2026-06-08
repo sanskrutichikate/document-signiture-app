@@ -5,14 +5,16 @@ import authRoutes from "./routes/authRoutes.js";
 import authmiddleware from "./middleware/authmiddleware.js";
 import documentroutes from "./routes/documentroutes.js";
 import path from "path";
+import cors from "cors";
 
 dotenv.config();
 
 connectDB();
 
 const app = express();
-
+app.use(cors());
 app.use(express.json());
+app.use("/uploads",express.static("uploads"));
 
 app.use("/api/auth", authRoutes);
 
@@ -25,7 +27,9 @@ app.get("/profile", authmiddleware, (req, res) => {
 
 app.use("/api/docs", documentroutes);
 
-app.use("/upload",express.static("uploads"));
+
+
+app.use("/api/documents",documentroutes);
 
 app.listen(5000, () => {
   console.log("Server running on port 5000");
