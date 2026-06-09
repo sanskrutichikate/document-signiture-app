@@ -1,36 +1,30 @@
-
-
-
 import { useEffect, useState } from "react";
 import PDFViewer from "../components/pdfviwer.jsx";
-
 
 function Dashboard() {
     const [documents, setDocuments] = useState([]);
     const [selectedPdf, setSelectedPdf] = useState(null);
+    const [signaturePos, setSignaturePos] = useState(null);
+
     useEffect(() => {
         fetchDocuments();
-
     }, []);
 
     const fetchDocuments = async () => {
-
         const token = localStorage.getItem("token");
 
         const response = await fetch(
             "http://localhost:5000/api/documents/my-documents",
             {
                 headers: {
-                    Authorization: token
-                }
+                    Authorization: token,
+                },
             }
         );
 
-
         const data = await response.json();
 
-
-        console.log("Response:", data);
+        console.log(data);
 
         if (Array.isArray(data)) {
             setDocuments(data);
@@ -38,6 +32,7 @@ function Dashboard() {
             console.log("API Error:", data);
         }
     };
+
     console.log(selectedPdf);
 
     return (
@@ -51,7 +46,11 @@ function Dashboard() {
 
                     <button
                         onClick={() => {
-                            const pdfUrl = `http://localhost:5000/${doc.filepath.replace(/\\/g, "/")}`;
+                            const pdfUrl = `http://localhost:5000/${doc.filepath.replace(
+                                /\\/g,
+                                "/"
+                            )}`;
+
                             console.log("PDF URL:", pdfUrl);
                             setSelectedPdf(pdfUrl);
                         }}
@@ -62,20 +61,47 @@ function Dashboard() {
             ))}
 
             {selectedPdf && (
-                <a
-                    href={selectedPdf}
-                    target="_blank"
-                    rel="noreferrer"
+                <div
+                    style={{
+                        position: "relative",
+                        border: "1px solid #ccc",
+                        padding: "20px",
+                        marginTop: "20px",
+                        minHeight: "300px",
+                    }}
+                    onClick={(e) => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+
+                        setSignaturePos({
+                            x: e.clientX - rect.left,
+                            y: e.clientY - rect.top,
+                        });
+                    }}
                 >
-                    Open Selected PDF
-                </a>
+                    <div style={{ position: "relative" }}>
+                        <PDFViewer fileUrl={selectedPdf}
+                         signaturePos={signaturePos} />
+
+                        {signaturePos && (
+                            <div
+                                style={{
+                                    position: "absolute",
+                                    left: signaturePos.x,
+                                    top: signaturePos.y,
+                                    border: "2px dashed red",
+                                    padding: "5px",
+                                    backgroundColor: "white",
+                                }}
+                            >
+                                Sign Here
+                            </div>
+                        )}
+                    </div>
+
+                </div>
             )}
         </div>
     );
-
-
 }
-
-
 
 export default Dashboard;

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -5,16 +6,46 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url
 ).toString();
 
-function PDFViewer({ fileUrl }) {
+function PDFViewer({ fileUrl, signaturePos }) {
+  const [numPages, setNumPages] = useState(null);
+
+  function onDocumentLoadSuccess({ numPages }) {
+    setNumPages(numPages);
+  }
+
   return (
-    <Document
-      file={fileUrl}
-      onLoadSuccess={() => console.log("PDF Loaded Successfully")}
-      onLoadError={(error) => console.error("PDF Error:", error)}
-    >
-      <Page pageNumber={1} />
-    </Document>
+    <div style={{ position: "relative" }}>
+      <Document
+        file={fileUrl}
+        onLoadSuccess={onDocumentLoadSuccess}
+      >
+        {Array.from(
+          new Array(numPages),
+          (el, index) => (
+            <Page
+              key={`page_${index + 1}`}
+              pageNumber={index + 1}
+            />
+          )
+        )}
+      </Document>
+
+      {signaturePos && (
+        <div
+          style={{
+            position: "absolute",
+            left: signaturePos.x,
+            top: signaturePos.y,
+            border: "2px dashed red",
+            padding: "5px",
+            backgroundColor: "white",
+          }}
+        >
+          Sign Here
+        </div>
+      )}
+    </div>
   );
 }
 
-export default  PDFViewer;
+export default PDFViewer;
