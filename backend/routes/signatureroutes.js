@@ -3,6 +3,7 @@ import Signature from "../models/signature.js";
 
 const router = express.Router();
 
+// Save Signature
 router.post("/save", async (req, res) => {
   try {
     const { fileId, signer, x, y } = req.body;
@@ -25,6 +26,15 @@ router.post("/save", async (req, res) => {
       message: error.message,
     });
   }
+});
+
+// Test Route
+router.post("/", (req, res) => {
+  console.log("Signature API hit");
+
+  res.json({
+    message: "Success",
+  });
 });
 
 export default router;

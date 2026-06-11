@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import PDFViewer from "../components/pdfviwer.jsx";
+import axios from "axios";
 
 function Dashboard() {
     const [documents, setDocuments] = useState([]);
     const [selectedPdf, setSelectedPdf] = useState(null);
     const [signaturePos, setSignaturePos] = useState(null);
+    const [selectedDocumentId, setSelectedDocumentId] = useState(null);
 
     useEffect(() => {
         fetchDocuments();
@@ -24,8 +26,6 @@ function Dashboard() {
 
         const data = await response.json();
 
-        console.log(data);
-
         if (Array.isArray(data)) {
             setDocuments(data);
         } else {
@@ -33,12 +33,30 @@ function Dashboard() {
         }
     };
 
-    console.log(selectedPdf);
+
+    const saveSignature = async (pos) => {
+
+        console.log("SAVE BUTTON CLICKED");
+
+        try {
+            await axios.post("http://localhost:5000/api/signature/save", {
+                fileId: selectedDocumentId,
+                signer: "6a2576def0a7f58d2c289ba2",
+                x: signaturePos.x,
+                y: signaturePos.y
+            });
+
+            alert("Saved Successfully");
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     return (
         <div>
             <h1>My Documents</h1>
 
+            {/* DOCUMENT LIST */}
             {documents.map((doc) => (
                 <div key={doc._id}>
                     <p>{doc.filename}</p>
@@ -46,13 +64,10 @@ function Dashboard() {
 
                     <button
                         onClick={() => {
-                            const pdfUrl = `http://localhost:5000/${doc.filepath.replace(
-                                /\\/g,
-                                "/"
-                            )}`;
-
-                            console.log("PDF URL:", pdfUrl);
+                            const pdfUrl = `http://localhost:5000/${doc.filepath.replace(/\\/g, "/")}`;
                             setSelectedPdf(pdfUrl);
+                            setSelectedDocumentId(doc._id);
+                            setSignaturePos(null);
                         }}
                     >
                         Preview
@@ -60,43 +75,48 @@ function Dashboard() {
                 </div>
             ))}
 
+            {/* PDF VIEWER */}
             {selectedPdf && (
                 <div
                     style={{
                         position: "relative",
                         border: "1px solid #ccc",
-                        padding: "20px",
                         marginTop: "20px",
-                        minHeight: "300px",
-                    }}
-                    onClick={(e) => {
-                        const rect = e.currentTarget.getBoundingClientRect();
-
-                        setSignaturePos({
-                            x: e.clientX - rect.left,
-                            y: e.clientY - rect.top,
-                        });
                     }}
                 >
-                    <div style={{ position: "relative" }}>
-                        <PDFViewer fileUrl={selectedPdf}
-                         signaturePos={signaturePos} />
+                    <PDFViewer
+                        fileUrl={selectedPdf}
+                        signaturePos={signaturePos}
+                        setSignaturePos={setSignaturePos}
+                    />
 
-                        {signaturePos && (
-                            <div
-                                style={{
-                                    position: "absolute",
-                                    left: signaturePos.x,
-                                    top: signaturePos.y,
-                                    border: "2px dashed red",
-                                    padding: "5px",
-                                    backgroundColor: "white",
-                                }}
-                            >
-                                Sign Here
-                            </div>
-                        )}
-                    </div>
+                    {/* SIGNATURE BOX */}
+                    {signaturePos && (
+                        <div
+                            style={{
+                                position: "absolute",
+                                left: signaturePos.x,
+                                top: signaturePos.y,
+                                border: "2px solid blue",
+                                padding: "5px",
+                                backgroundColor: "lightgreen",
+                                cursor: "move",
+                                zIndex: 9999,
+                            }}
+                        >
+                            Sign Here
+                        </div>
+
+
+                    )}
+                    <button
+                        onClick={() => {
+                            console.log(signaturePos);
+                            saveSignature(signaturePos);
+                        }}
+                    >
+                        Save Signature Position
+                    </button>
 
                 </div>
             )}

@@ -6,44 +6,66 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url
 ).toString();
 
-function PDFViewer({ fileUrl, signaturePos }) {
+function PDFViewer({ fileUrl, signaturePos, setSignaturePos }) {
   const [numPages, setNumPages] = useState(null);
 
   function onDocumentLoadSuccess({ numPages }) {
     setNumPages(numPages);
   }
 
-  return (
-    <div style={{ position: "relative" }}>
-      <Document
-        file={fileUrl}
-        onLoadSuccess={onDocumentLoadSuccess}
-      >
-        {Array.from(
-          new Array(numPages),
-          (el, index) => (
-            <Page
-              key={`page_${index + 1}`}
-              pageNumber={index + 1}
-            />
-          )
-        )}
-      </Document>
+  // ✅ click handler inside PDF page
+  const handlePageClick = (e, pageNumber) => {
+    const rect = e.currentTarget.getBoundingClientRect();
 
-      {signaturePos && (
-        <div
-          style={{
-            position: "absolute",
-            left: signaturePos.x,
-            top: signaturePos.y,
-            border: "2px dashed red",
-            padding: "5px",
-            backgroundColor: "white",
-          }}
-        >
-          Sign Here
-        </div>
-      )}
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    setSignaturePos({
+      x,
+      y,
+      page: pageNumber
+    });
+  };
+
+  return (
+    <div>
+      <Document file={fileUrl} onLoadSuccess={onDocumentLoadSuccess}>
+        {numPages &&
+          Array.from({ length: numPages }, (_, index) => {
+            const pageNumber = index + 1;
+
+            return (
+              <div
+                key={pageNumber}
+                style={{
+                  position: "relative",
+                  marginBottom: "20px"
+                }}
+                onClick={(e) => handlePageClick(e, pageNumber)}
+              >
+                <Page pageNumber={pageNumber} />
+
+                {/* SIGNATURE BOX */}
+                {signaturePos?.page === pageNumber && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: signaturePos.x,
+                      top: signaturePos.y,
+                      border: "2px solid blue",
+                      padding: "5px",
+                      backgroundColor: "lightgreen",
+                      cursor: "move",
+                      zIndex: 9999
+                    }}
+                  >
+                    Sign Here
+                  </div>
+                )}
+              </div>
+            );
+          })}
+      </Document>
     </div>
   );
 }
