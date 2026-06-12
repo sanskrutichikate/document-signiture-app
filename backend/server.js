@@ -7,6 +7,7 @@ import documentroutes from "./routes/documentroutes.js";
 import path from "path";
 import cors from "cors";
 import signatureroutes from "./routes/signatureroutes.js";
+import signedPdfroutes from "./routes/signedpdf.js";
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.use("/api/docs", documentroutes);
 
 app.use("/api/documents",documentroutes);
 app.use("/api/signature", signatureroutes);
+app.use("/api/signedpdf",signedPdfroutes);
 
 app.listen(5000, () => {
   console.log("Server running on port 5000");

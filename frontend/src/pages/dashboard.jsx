@@ -107,12 +107,29 @@ function Dashboard() {
                     <p>{doc.filepath}</p>
 
                     <button
-                        onClick={() => {
+                        onClick={async() => {
                             const pdfUrl = `http://localhost:5000/${doc.filepath.replace(/\\/g, "/")}`;
                             setSelectedPdf(pdfUrl);
                             setSelectedDocumentId(doc._id);
-                            setSignaturePos(null);
+                            try {
+                                const response = await axios.get(
+                                    `http://localhost:5000/api/signature/${doc._id}`
+                                );
+
+                                if (response.data) {
+                                    setSignaturePos({
+                                        x: response.data.x,
+                                        y: response.data.y,
+                                    });
+                                } else {
+                                    setSignaturePos(null);
+                                }
+                            } catch (error) {
+                                console.error(error);
+                                setSignaturePos(null);
+                            }
                         }}
+
                     >
                         Preview
                     </button>

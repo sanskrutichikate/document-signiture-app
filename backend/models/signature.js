@@ -24,6 +24,8 @@ const signatureSchema=new mongoose.Schema({
         enum:["Pending","Signed"],
         default:"Pending",
     },
-});
+},
+    { timestamps: true }
+);
 
 export default mongoose.model("Signature", signatureSchema);

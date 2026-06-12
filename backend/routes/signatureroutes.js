@@ -8,12 +8,11 @@ router.post("/save", async (req, res) => {
   try {
     const { fileId, signer, x, y } = req.body;
 
-    const signature = new Signature({
-      fileId,
-      signer,
-      x,
-      y,
-    });
+    const signature = await Signature.findOneAndUpdate(
+      { fileId, signer },
+      { x, y },
+      { new: true, upsert: true }
+    );
 
     await signature.save();
 
@@ -27,6 +26,22 @@ router.post("/save", async (req, res) => {
     });
   }
 });
+
+router.get("/:fileId", async (req, res) => {
+  try {
+       const signature = await Signature.findOne({
+      fileId: req.params.fileId,
+    });
+
+    res.json(signature);
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+});
+
 
 // Test Route
 router.post("/", (req, res) => {
