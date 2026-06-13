@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const documentSchema = new mongoose.Schema({
     filename: {
         type: String,
+        
         required: true
 
     },

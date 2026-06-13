@@ -1,5 +1,6 @@
 import express from "express";
 import Signature from "../models/signature.js";
+import { createSignatureRequest,getSignatureByToken,signDocument } from "../controllers/signaturecontrollers.js";
 
 const router = express.Router();
 
@@ -42,6 +43,10 @@ router.get("/:fileId", async (req, res) => {
   }
 });
 
+router.post("/request",createSignatureRequest);  //signature  request
+  router.get("/public/:token", getSignatureByToken);
+    router.put("/sign/:token", signDocument);
+
 
 // Test Route
 router.post("/", (req, res) => {
@@ -50,6 +55,10 @@ router.post("/", (req, res) => {
   res.json({
     message: "Success",
   });
+
+
+
+  
 });
 
 export default router;
