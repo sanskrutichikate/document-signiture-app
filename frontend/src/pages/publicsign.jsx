@@ -14,7 +14,8 @@ function PublicSign() {
                     `http://localhost:5000/api/signature/public/${token}`
                 );
 
-                console.log(res.data);
+                console.log("FULL RESPONSE:", res.data);
+                console.log("FILE ID:", res.data.fileId);
                 setSignatureData(res.data);
             } catch (error) {
                 console.log(error);
@@ -44,7 +45,9 @@ function PublicSign() {
                     <p>Signer Email :{signatureData.signerEmail}</p>
                     <p>Status:{signatureData.status}</p>
 
-                <PDFViewer fileUrl={`http://localhost:5000/${signatureData.fileId.path}`} />
+                    <PDFViewer
+                        fileUrl={`http://localhost:5000/${signatureData.fileId.filepath.replace(/\\/g, "/")}`}
+                    />
 
 
                     <button onClick={handleSign}>

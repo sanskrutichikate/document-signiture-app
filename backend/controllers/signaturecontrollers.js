@@ -71,6 +71,10 @@ const createSignatureRequest = async (req, res) => {
     signature.status = "Signed";
 
     await signature.save();
+    await req.createAuditLog(signature.fileId);
+
+    
+    
 
     res.status(200).json({
       message: "Document signed successfully",

@@ -1,5 +1,7 @@
 import express from "express";
 import Signature from "../models/signature.js";
+import authMiddleware from "../middleware/authmiddleware.js";
+import auditMiddleware from "../middleware/auditMiddleware.js";
 import { createSignatureRequest,getSignatureByToken,signDocument } from "../controllers/signaturecontrollers.js";
 
 const router = express.Router();
@@ -45,7 +47,7 @@ router.get("/:fileId", async (req, res) => {
 
 router.post("/request",createSignatureRequest);  //signature  request
   router.get("/public/:token", getSignatureByToken);
-    router.put("/sign/:token", signDocument);
+    router.put("/sign/:token", authMiddleware, auditMiddleware, signDocument);
 
 
 // Test Route
