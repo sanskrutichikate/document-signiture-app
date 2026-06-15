@@ -6,7 +6,7 @@ const router =express.Router();
 
 router.get("/:fileId", authMiddleware, async (req, res) => {
   try {
-    const logs = await Audit.find({
+    const logs = await audit.find({
       fileId: req.params.fileId
     });
     res.status(200).json(logs);

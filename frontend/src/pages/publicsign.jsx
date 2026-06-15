@@ -36,6 +36,36 @@ function PublicSign() {
             console.log(error);
         }
     };
+const handleAccept = async () => {               //accept function
+    try {
+        await axios.post(
+            `http://localhost:5000/api/signature/accept/${signatureData._id}`
+        );
+
+        alert("Document accepted successfully");
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+
+const handleReject = async () => {              //reject function
+    try {
+        const reason = prompt("Enter rejection reason");
+
+        await axios.post(
+            `http://localhost:5000/api/signature/reject/${signatureData._id}`,
+            { reason }
+        );
+
+        alert("Document rejected");
+    } catch (error) {
+        console.log(error);
+    }
+};
+    
+    
+
 
     return (
         <div>
@@ -49,10 +79,13 @@ function PublicSign() {
                         fileUrl={`http://localhost:5000/${signatureData.fileId.filepath.replace(/\\/g, "/")}`}
                     />
 
+                
+                    
+                    <button onClick={handleAccept}> Accept & Sign</button>{"       "}
 
-                    <button onClick={handleSign}>
-                        Sign Document
-                    </button>
+                    <button onClick={handleReject}> Reject</button>
+                    
+
                 </div>
             ) : (
                 <p>Loading</p>

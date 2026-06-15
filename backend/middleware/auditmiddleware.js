@@ -1,8 +1,9 @@
 import audit from "../models/audit.js";
 
 const auditMiddleware=async(req,res,next)=>{
+     console.log("Audit middleware running");
     try{
-        req.createAuditlog=async(fileId)=>{
+        req.createAuditLog=async(fileId)=>{
             await audit.create({
                 fileId,
                 signer:req.user.id,
