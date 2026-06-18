@@ -28,6 +28,12 @@ const signatureSchema = new mongoose.Schema({
     required: true,
   },
 
+
+page: {
+  type: Number,
+  required: true,
+},
+
   token: {
     type: String,
     required: true,

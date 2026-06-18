@@ -5,25 +5,42 @@ import auditMiddleware from "../middleware/auditmiddleware.js";
 import { createSignatureRequest, getSignatureByToken, signDocument } from "../controllers/signaturecontrollers.js";
 
 const router = express.Router();
+console.log("SIGNATURE ROUTES LOADED");
 
-// Save Signature
 router.post("/save", async (req, res) => {
-  try {
-    const { fileId, signer, x, y } = req.body;
+  console.log("SAVE ROUTE HIT");
 
-    const signature = await Signature.findOneAndUpdate(
-      { fileId, signer },
-      { x, y },
-      { new: true, upsert: true }
-    );
+  try {
+    const { fileId, x, y } = req.body;
+
+    const signature = await Signature.findOne({ fileId }).sort({ createdAt: -1 });
+
+    console.log("FOUND:", signature);
+
+    if (!signature) {
+      return res.status(404).json({
+        message: "Signature request not found",
+      });
+    }
+
+    signature.x = x;
+    signature.y = y;
+
+    console.log("BEFORE SAVE:", signature);
 
     await signature.save();
 
-    res.status(201).json({
+    console.log("AFTER SAVE:", signature);
+
+    res.status(200).json({
       message: "Signature saved successfully",
       signature,
     });
+
   } catch (error) {
+    console.log("SAVE ERROR:");
+    console.log(error);
+
     res.status(500).json({
       message: error.message,
     });
@@ -31,10 +48,9 @@ router.post("/save", async (req, res) => {
 });
 
 
-
-router.post("/request", createSignatureRequest);  //signature  request
+router.post("/request", authMiddleware,createSignatureRequest);  //signature  request
 router.get("/public/:token", getSignatureByToken);
-router.put("/sign/:token", authMiddleware, auditMiddleware, signDocument);
+router.put("/sign/:token",   signDocument);
 
 
 router.get("/:fileId", async (req, res) => {
@@ -112,11 +128,11 @@ router.post("/reject/:id", async (req, res) => {          //reject api route
 });
 
 
-router.post("/status/:id",async(req ,res)=>{       //status  api  route
-  try{
+router.post("/status/:id", async (req, res) => {       //status  api  route
+  try {
     const signature = await Signature.findById(req.params.id);
-    if(!signature){
-      return res.status(404).json({ message:"Not found" });
+    if (!signature) {
+      return res.status(404).json({ message: "Not found" });
     }
 
 
@@ -124,11 +140,11 @@ router.post("/status/:id",async(req ,res)=>{       //status  api  route
       status: signature.status,
       rejectionReason: signature.rejectionReason,
     });
-  }  
+  }
 
-  catch(error){
+  catch (error) {
     res.status(500).json({
-            message: "Error fetching status",
+      message: "Error fetching status",
       error: error.message,
 
     });

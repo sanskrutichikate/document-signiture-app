@@ -48,16 +48,8 @@ function PDFViewer({ fileUrl, signaturePos, setSignaturePos }) {
                 {/* SIGNATURE BOX */}
                 {signaturePos?.page === pageNumber && (
                   <div
-                    style={{
-                      position: "absolute",
-                      left: signaturePos.x,
-                      top: signaturePos.y,
-                      border: "2px solid blue",
-                      padding: "5px",
-                      backgroundColor: "lightgreen",
-                      cursor: "move",
-                      zIndex: 9999
-                    }}
+                   
+                   
                   >
                     Sign Here
                   </div>

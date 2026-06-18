@@ -1,38 +1,31 @@
+import User from "../models/user.js";
 import jwt from "jsonwebtoken";
 
+const authMiddleware = async (req, res, next) => {
+  const token = req.header("Authorization");
 
-const authMiddleware = (req,res,next)=>{
+  if (!token) {
+    return res.status(401).json({ message: "Access Denied" });
+  }
 
- const token = req.header("Authorization");
- console.log("TOKEN RECEIVED:", token);
+  try {
+    const verified = jwt.verify(token, "mysecretkey");
 
- if(!token){
-  return res.status(401).json({
-   message:"Access Denied"
-  });
- }
+    const user = await User.findById(verified.id);
 
- try{
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-  const verified = jwt.verify(
-   token,
-   "mysecretkey"
-  );
+    req.user = user; // ✅ now you have email, name, etc.
 
-  req.user = verified;
+    next();
 
-  next();
-
- }catch(error){
-
-  res.status(400).json({
-   message:error.message
-  });
-
- }
-
+  } catch (error) {
+    res.status(400).json({
+      message: error.message
+    });
+  }
 };
-
-
 
 export default authMiddleware;

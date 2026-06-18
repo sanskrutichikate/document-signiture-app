@@ -5,7 +5,13 @@ import sendSignatureEmail from "../utils/sendEmail.js";
 
 const createSignatureRequest = async (req, res) => {
     try {
-        const { fileId, signerEmail, x, y } = req.body;
+
+        console.log("REQ USER:", req.user);        // 👈 ADD THIS
+        console.log("USER EMAIL:", req.user?.email); // 👈 ADD THIS
+
+
+        const { fileId, x, y,page } = req.body;
+         const signerEmail = req.user.email;
 
         const token = crypto.randomBytes(20).toString("hex");
 
@@ -14,6 +20,7 @@ const createSignatureRequest = async (req, res) => {
             signerEmail,
             x,
             y,
+            page,
             token
         });
 
@@ -23,7 +30,8 @@ const createSignatureRequest = async (req, res) => {
 
         res.status(201).json({
             message: "Signature request created",
-            signature
+            signature,
+            signingLink 
         });
     } catch (error) {
         res.status(500).json({
@@ -58,6 +66,7 @@ const createSignatureRequest = async (req, res) => {
     const signDocument = async (req, res) => {  //for signing
   try {
     const { token } = req.params;
+    
 
     const signature = await Signature.findOne({ token });
 
@@ -71,7 +80,7 @@ const createSignatureRequest = async (req, res) => {
     signature.status = "Signed";
 
     await signature.save();
-    await req.createAuditLog(signature.fileId);
+    //await req.createAuditLog(signature.fileId);
 
     
     

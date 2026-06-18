@@ -30,28 +30,59 @@ function Dashboard() {
         if (Array.isArray(data)) {
             setDocuments(data);
         } else {
-            console.log("API Error:", data);
+            console.log("Full API Error:", JSON.stringify(data, null, 2));
         }
     };
 
-
-    const saveSignature = async (pos) => {
-
+    // ✅ SAVE SIGNATURE REQUEST
+    const saveSignature = async () => {
         console.log("SAVE BUTTON CLICKED");
 
-        try {
-            await axios.post("http://localhost:5000/api/signature/save", {
-                fileId: selectedDocumentId,
-                signer: "6a2576def0a7f58d2c289ba2",
-                x: signaturePos.x,
-                y: signaturePos.y
-            });
-
-            alert("Saved Successfully");
-        } catch (error) {
-            console.error(error);
+        if (!signaturePos) {
+            alert("Please click on the PDF first");
+            return;
         }
-    };
+
+        if (!selectedDocumentId) {
+            alert("No document selected");
+            return;
+        }
+
+        const token = localStorage.getItem("token"); // ✅ FIXED
+
+        try {
+            const response = await axios.post(
+                "http://localhost:5000/api/signature/request",
+                {
+                    fileId: selectedDocumentId,
+                    x: signaturePos.x,
+                    y: signaturePos.y,
+                    page: signaturePos.page,
+                },
+                {
+                    headers: {
+                        Authorization: token, // ✅ FIXED
+                    },
+                }
+            );
+             // 🔥 GET LINK FROM BACKEND
+        const link = response.data.signingLink;
+
+        console.log("PUBLIC SIGN LINK:", link);
+
+        alert("Signing Link Created:\n" + link);
+
+        // OPTIONAL: auto open link
+        window.open(link, "_blank");
+
+    } catch (error) {
+        console.log("ERROR:", error.response?.data);
+    }
+};
+
+           
+
+    // ✅ UPLOAD PDF
     const uploadPdf = async () => {
         if (!pdfFile) {
             alert("Please select a PDF");
@@ -76,7 +107,6 @@ function Dashboard() {
             );
 
             alert("PDF Uploaded Successfully");
-
             fetchDocuments();
 
         } catch (error) {
@@ -86,65 +116,59 @@ function Dashboard() {
     };
 
     return (
-        <div>
-            <h1>My Documents</h1>
-            <div>
+        <div className="min-h-screen bg-yellow-50 p-6">
+
+            <h1 className="text-3xl font-bold text-black mb-6">
+                My Documents
+            </h1>
+
+            {/* UPLOAD SECTION */}
+            <div className="bg-white shadow-md rounded-xl p-4 mb-6 flex gap-4 items-center">
                 <input
                     type="file"
                     accept=".pdf"
                     onChange={(e) => setPdfFile(e.target.files[0])}
+                    className="border p-2 rounded-lg"
                 />
 
-                <button onClick={uploadPdf}>
+                <button
+                    onClick={uploadPdf}
+                    className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600"
+                >
                     Upload PDF
                 </button>
             </div>
 
             {/* DOCUMENT LIST */}
-            {documents.map((doc) => (
-                <div key={doc._id}>
-                    <p>{doc.filename}</p>
-                    <p>{doc.filepath}</p>
-
-                    <button
-                        onClick={async() => {
-                            const pdfUrl = `http://localhost:5000/${doc.filepath.replace(/\\/g, "/")}`;
-                            setSelectedPdf(pdfUrl);
-                            setSelectedDocumentId(doc._id);
-                            try {
-                                const response = await axios.get(
-                                    `http://localhost:5000/api/signature/${doc._id}`
-                                );
-
-                                if (response.data) {
-                                    setSignaturePos({
-                                        x: response.data.x,
-                                        y: response.data.y,
-                                    });
-                                } else {
-                                    setSignaturePos(null);
-                                }
-                            } catch (error) {
-                                console.error(error);
-                                setSignaturePos(null);
-                            }
-                        }}
-
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {documents.map((doc) => (
+                    <div
+                        key={doc._id}
+                        className="bg-white shadow-md rounded-xl p-5"
                     >
-                        Preview
-                    </button>
-                </div>
-            ))}
+                        <p className="font-semibold">{doc.filename}</p>
+
+                        <button
+                            className="mt-3 bg-green-500 text-white px-4 py-2 rounded-lg"
+                            onClick={() => {
+                                const pdfUrl = `http://localhost:5000/${doc.filepath.replace(/\\/g, "/")}`;
+
+                                setSelectedPdf(pdfUrl);
+                                setSelectedDocumentId(doc._id);
+
+                                setSignaturePos(null);
+                            }}
+                        >
+                            Preview
+                        </button>
+                    </div>
+                ))}
+            </div>
 
             {/* PDF VIEWER */}
             {selectedPdf && (
-                <div
-                    style={{
-                        position: "relative",
-                        border: "1px solid #ccc",
-                        marginTop: "20px",
-                    }}
-                >
+                <div className="relative mt-6 bg-white p-4 border rounded-lg">
+
                     <PDFViewer
                         fileUrl={selectedPdf}
                         signaturePos={signaturePos}
@@ -154,31 +178,22 @@ function Dashboard() {
                     {/* SIGNATURE BOX */}
                     {signaturePos && (
                         <div
+                            className="absolute border-2 border-blue-500 bg-green-200 px-2 py-1 rounded"
                             style={{
-                                position: "absolute",
                                 left: signaturePos.x,
                                 top: signaturePos.y,
-                                border: "2px solid blue",
-                                padding: "5px",
-                                backgroundColor: "lightgreen",
-                                cursor: "move",
-                                zIndex: 9999,
                             }}
                         >
                             Sign Here
                         </div>
-
-
                     )}
+
                     <button
-                        onClick={() => {
-                            console.log(signaturePos);
-                            saveSignature(signaturePos);
-                        }}
+                        onClick={saveSignature}
+                        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg"
                     >
                         Save Signature Position
                     </button>
-
                 </div>
             )}
         </div>
