@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 dotenv.config();
 import connectDB from "./db.js";
-import authRoutes from "./routes/authRoutes.js";
+import authRoutes from "./routes/authroutes.js";
 import authmiddleware from "./middleware/authmiddleware.js";
 import documentroutes from "./routes/documentroutes.js";
 import path from "path";
